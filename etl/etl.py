@@ -1,7 +1,7 @@
 import os
+import time
 import psycopg2
 from psycopg2.extras import execute_values
-import subprocess
 import logging
 
 # Configuración de logging
@@ -12,23 +12,32 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
-
-
 DB_ERP = {
-    "dbname": os.getenv("DB_ERP_NAME"),
-    "user": os.getenv("DB_ERP_USER"),
-    "password": os.getenv("DB_ERP_PASSWORD"),
-    "host": os.getenv("DB_ERP_HOST"),
-    "port": os.getenv("DB_ERP_PORT")
+    "dbname": os.getenv("POSTGRES_ERP_DB"),
+    "user": os.getenv("POSTGRES_ERP_USER"),
+    "password": os.getenv("POSTGRES_ERP_PASSWORD"),
+    "host": os.getenv("ERP_HOST")
 }
 
 DB_DWH = {
-    "dbname": os.getenv("DB_DWH_NAME"),
-    "user": os.getenv("DB_DWH_USER"),
-    "password": os.getenv("DB_DWH_PASSWORD"),
-    "host": os.getenv("DB_DWH_HOST"),
-    "port": os.getenv("DB_DWH_PORT")
+    "dbname": os.getenv("POSTGRES_BI_DB"),
+    "user": os.getenv("POSTGRES_BI_USER"),
+    "password": os.getenv("POSTGRES_BI_PASSWORD"),
+    "host": os.getenv("BI_HOST")
 }
+
+def wait_for_postgres(config):
+    print(f"Esperando a que la base de datos '{config["dbname"]}' esté lista...")
+    while True:
+        try:
+            conn = psycopg2.connect(host=config["host"], dbname=config["dbname"], user=config["user"], password=config["password"])
+            conn.close()
+            logging.info(f"Conexión a la base de datos '{config['dbname']}' exitosa.")
+            break
+        except Exception as e:
+            logging.error(f"La base de datos '{config['dbname']}' no está lista todavía...: {e}")
+            time.sleep(2)
+
 
 
 # Función para conectar a una base de datos
@@ -39,8 +48,7 @@ def connect_db(config):
         dbname=config["dbname"],
         user=config["user"],
         password=config["password"],
-        host=config["host"],
-        port=config["port"])
+        host=config["host"])
     except Exception as e:
         logging.error(f"Error al conectar a la base de datos: {e}")
         return None
@@ -477,8 +485,6 @@ def extract_load_fact_inventory():
         logging.error(f"Error en extract_load_fact_inventory: {e}")
 
 def main():
-    subprocess.run(["/bin/bash","./init_erp.sh"])
-    subprocess.run(["/bin/bash","./init.sh"])
     extract_load_customers()
     extract_load_products()
     extract_load_sales_territory()

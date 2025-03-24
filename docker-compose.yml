@@ -3,7 +3,7 @@ services:
     build:
       context: ./erp
       dockerfile: Dockerfile
-    container_name: erp
+    container_name: "$ERP_HOST"
     restart: always
     env_file:
       - .env
@@ -14,7 +14,7 @@ services:
     build:
       context: ./bi
       dockerfile: Dockerfile
-    container_name: bi
+    container_name: "$BI_HOST"
     restart: always
     env_file:
       - .env
