@@ -1,0 +1,33 @@
+services:
+  erp:
+    build:
+      context: ./erp
+      dockerfile: Dockerfile
+    container_name: erp
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "3003:5432"
+    command: ["postgres", "-c", "fsync=off"]  # Mejora la velocidad de restauración
+  bi:
+    build:
+      context: ./bi
+      dockerfile: Dockerfile
+    container_name: bi
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "3004:5432"
+  etl:
+    build:
+      context: ./etl
+      dockerfile: Dockerfile
+    container_name: etl
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - erp
+      - bi
