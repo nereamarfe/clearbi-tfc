@@ -9,6 +9,8 @@ services:
       - .env
     ports:
       - "3003:5432"
+    networks:
+      - etl-net
     command: ["postgres", "-c", "fsync=off"]  # Mejora la velocidad de restauración
   bi:
     build:
@@ -20,14 +22,49 @@ services:
       - .env
     ports:
       - "3004:5432"
+    networks:
+      - etl-net
+      - bi-net
   etl:
     build:
       context: ./etl
       dockerfile: Dockerfile
     container_name: etl
-    restart: always
+    restart: "no"
     env_file:
       - .env
     depends_on:
       - erp
       - bi
+    volumes:
+      - ./etl/etl.log:/app/etl.log
+    networks:
+       - etl-net
+  metabase:
+    build: 
+      context: ./metabase
+      dockerfile: Dockerfile
+    container_name: metabase
+    hostname: metabase
+    volumes:
+      - mb:/dev/random:ro
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    depends_on:
+      - bi
+    networks:
+      - bi-net
+    healthcheck:
+      test: curl --fail -I http://localhost:3000/api/health || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 20
+
+networks:
+  etl-net:
+  bi-net:
+
+volumes:
+   mb:

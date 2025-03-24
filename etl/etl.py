@@ -36,7 +36,7 @@ def wait_for_postgres(config):
             break
         except Exception as e:
             logging.error(f"La base de datos '{config['dbname']}' no está lista todavía...: {e}")
-            time.sleep(2)
+            time.sleep(5)
 
 
 
@@ -484,7 +484,20 @@ def extract_load_fact_inventory():
     except Exception as e:
         logging.error(f"Error en extract_load_fact_inventory: {e}")
 
+def check_bi_loaded():
+    conn_dwh = connect_db(DB_DWH)
+    with conn_dwh.cursor() as cur:
+        cur.execute("CREATE TABLE IF NOT EXISTS etl_ready (ok BOOLEAN);")
+        cur.execute("INSERT INTO etl_ready VALUES (TRUE);")
+    conn_dwh.commit()
+    conn_dwh.close()
+    logging.info("BI cargado con éxito.")
+
+
 def main():
+    logging.info("--------------INICIANDO PROCESO ETL...--------------")
+    wait_for_postgres(DB_ERP)
+    wait_for_postgres(DB_DWH)
     extract_load_customers()
     extract_load_products()
     extract_load_sales_territory()
@@ -496,6 +509,8 @@ def main():
     extract_load_locations()
     extract_load_fact_purchases()
     extract_load_fact_inventory()
+    logging.info("--------------PROCESO ETL FINALIZADO.--------------")
+    check_bi_loaded()
 
 if __name__ == "__main__":
    main()
