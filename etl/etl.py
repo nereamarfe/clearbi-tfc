@@ -243,7 +243,7 @@ def extract_load_fact_sales():
                    TO_CHAR(soh.OrderDate, 'YYYYMMDD')::INTEGER AS OrderDateKey,
                    sod.OrderQty*sod.UnitPrice AS SalesAmount, sod.OrderQty AS Quantity,
                    sod.UnitPriceDiscount AS Discount, sod.UnitPrice,
-                   sod.OrderQty * (sod.UnitPrice - sod.UnitPriceDiscount) AS TotalSale,
+                   sod.OrderQty*sod.UnitPrice*(1 - sod.UnitPriceDiscount) AS TotalSale,
                    soh.ModifiedDate, CURRENT_TIMESTAMP AS CreatedDate
             FROM Sales.SalesOrderHeader soh
             LEFT JOIN Sales.SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
