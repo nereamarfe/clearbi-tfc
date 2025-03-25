@@ -26,6 +26,13 @@ DB_DWH = {
     "host": os.getenv("BI_HOST")
 }
 
+DB_MB = {
+    "dbname": os.getenv("MB_DB_DBNAME"),
+    "user": os.getenv("MB_DB_USER"),
+    "password": os.getenv("MB_DB_PASS"),
+    "host": os.getenv("BI_HOST")
+}
+
 def wait_for_postgres(config):
     print(f"Esperando a que la base de datos '{config["dbname"]}' esté lista...")
     while True:
@@ -37,6 +44,35 @@ def wait_for_postgres(config):
         except Exception as e:
             logging.error(f"La base de datos '{config['dbname']}' no está lista todavía...: {e}")
             time.sleep(5)
+
+def reload_bi():
+    logging.info("Reiniciando la base de datos 'bi'...")
+
+    # 1. Conectarse a 'metabase' (no a 'bi') para poder eliminarla
+    conn_admin = connect_db(DB_MB)
+    conn_admin.autocommit = True
+    with conn_admin.cursor() as cur:
+        # Cierra conexiones activas a 'bi' si las hubiera
+        cur.execute("""
+            SELECT pg_terminate_backend(pid)
+            FROM pg_stat_activity
+            WHERE datname = 'bi' AND pid <> pg_backend_pid();
+        """)
+        # Elimina y vuelve a crear la base 'bi'
+        cur.execute("DROP DATABASE IF EXISTS bi;")
+        cur.execute("CREATE DATABASE bi;")
+        logging.info("Base de datos 'bi' eliminada y recreada correctamente.")
+    conn_admin.close()
+
+    # 2. Conectarse a la nueva 'bi' y ejecutar el script de estructura
+    conn_bi = connect_db(DB_DWH)
+    with conn_bi.cursor() as cur:
+        with open('schema-bi.sql', 'r') as f:
+            cur.execute(f.read())
+    conn_bi.commit()
+    conn_bi.close()
+    logging.info("Estructura de la base de datos 'bi' cargada desde bi_schema.sql.")
+        
 
 
 
@@ -493,11 +529,20 @@ def check_bi_loaded():
     conn_dwh.close()
     logging.info("BI cargado con éxito.")
 
+def clear_etl_ready():
+    conn_dwh = connect_db(DB_DWH)
+    with conn_dwh.cursor() as cur:
+        cur.execute("DROP TABLE IF EXISTS etl_ready;")
+    conn_dwh.commit()
+    conn_dwh.close()
+    logging.info("Tabla etl_ready reiniciada (vacía).")
 
 def main():
     logging.info("--------------INICIANDO PROCESO ETL...--------------")
     wait_for_postgres(DB_ERP)
     wait_for_postgres(DB_DWH)
+    reload_bi()
+    clear_etl_ready()
     extract_load_customers()
     extract_load_products()
     extract_load_sales_territory()

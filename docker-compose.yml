@@ -33,9 +33,6 @@ services:
     restart: "no"
     env_file:
       - .env
-    depends_on:
-      - erp
-      - bi
     volumes:
       - ./etl/etl.log:/app/etl.log
     networks:
@@ -47,7 +44,7 @@ services:
     container_name: metabase
     hostname: metabase
     volumes:
-      - mb:/dev/random:ro
+      - metabase-data:/metabase.db
     ports:
       - 3000:3000
     env_file:
@@ -67,4 +64,4 @@ networks:
   bi-net:
 
 volumes:
-   mb:
+   metabase-data:

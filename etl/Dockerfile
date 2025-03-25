@@ -5,6 +5,7 @@ WORKDIR /app
 
 # Copiar requisitos e instalar dependencias
 COPY requirements.txt .
+COPY schema-bi.sql .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar el script ETL

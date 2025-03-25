@@ -32,6 +32,9 @@ PGPASSWORD=$POSTGRES_BI_PASSWORD psql -U "$POSTGRES_BI_USER" -d postgres -c "DRO
 echo "Creando nueva base de datos..."
 PGPASSWORD=$POSTGRES_BI_PASSWORD psql -U "$POSTGRES_BI_USER" -d postgres -c "CREATE DATABASE $POSTGRES_BI_DB;"
 
+echo "Creando nueva base de datos metabase vacía..."
+PGPASSWORD=$POSTGRES_BI_PASSWORD psql -U "$POSTGRES_BI_USER" -d postgres -c "CREATE DATABASE $MB_DB_DBNAME;"
+
 echo "Verificando que la base de datos se haya creado correctamente..."
 PGPASSWORD=$POSTGRES_BI_PASSWORD psql -U "$POSTGRES_BI_USER" -d postgres -c "\l"
 
