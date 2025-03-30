@@ -2,3 +2,4 @@
 .vscode/
 reload.log
 etl/etl.log
+reload.sh
