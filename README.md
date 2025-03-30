@@ -19,6 +19,15 @@ El sistema automatiza la extracción, transformación y carga (ETL) de datos pro
 
 Los servicios están orquestados mediante **Docker Compose** y organizados en redes internas para mayor seguridad.
 
+[![Texto alternativo](img/arquitectura.png)](img/arquitectura.png)
+
+
+Los servicios se comunican mediante dos redes internas:
+- **etl-net**: Comunicación entre ERP, DWH y ETL
+- **bi-net**: Comunicación entre DWH y Metabase
+
+[![Texto alternativo](img/redes.png)](img/redes.png)
+
 ---
 
 ## 📝 Estructura del Proyecto
@@ -38,10 +47,14 @@ Los servicios están orquestados mediante **Docker Compose** y organizados en re
 │   ├── etl.py
 │   ├── schema-bi.sql
 │   └── requirements.txt
+├── img/
+│   ├── arquitectura.png
+│   ├── despliegue.png
 ├── metabase/
-│   └── Dockerfile
+│   ├── Dockerfile
+|   └── wait-for-etl.sh
 ├── docker-compose.yml
-├── .env
+├── .env.example
 └── Makefile
 ```
 
@@ -51,7 +64,7 @@ Los servicios están orquestados mediante **Docker Compose** y organizados en re
 
 - Docker & Docker Compose
 - Make (opcional, recomendado)
-- Python 3.12+ (solo para desarrollo local)
+- Python 3.12+ 
 
 ---
 
@@ -62,33 +75,26 @@ Los servicios están orquestados mediante **Docker Compose** y organizados en re
 
 ---
 
-## 🚀 Despliegue Rápido
+## 🚀 Primer despliegue (Build Inicial)
 
-Levanta todo el entorno con un solo comando:
+Antes de iniciar por primera vez, es necesario construir las imágenes de Docker:
 
 ```bash
+make build
 make up
 ```
 
-Para detener y eliminar los contenedores:
-
-```bash
-make down
-```
+Esto creará las imágenes, restaurará la base de datos operativa y preparará el entorno completo para su ejecución.
 
 ---
 
-## 💡 Comandos Makefile últiles
+## 🔄 Ejecución diaria (Reload de datos)
 
-| Comando          | Descripción                                      |
-|---------------|--------------------------------------------------|
-| make up      | Levanta todos los servicios                      |
-| make down    | Detiene y elimina los servicios                  |
-| make logs    | Muestra los logs de los contenedores             |
-| make etl     | Ejecuta el proceso ETL                           |
-| make reset-bi| Reinicia la base de datos DWH                    |
-| make clear-etl| Limpia la tabla de estado `etl_ready`            |
+Para actualizar los datos diariamente, ejecuta el proceso ETL:
 
+```bash
+make all
+```
 ---
 
 ## 📈 Proceso ETL
@@ -101,7 +107,7 @@ El proceso ETL realiza las siguientes acciones:
 4. Extrae, transforma y carga datos desde el ERP al DWH.
 5. Crea la tabla de control `etl_ready`.
 
-Los logs del proceso se encuentran en `etl/etl.log`.
+**Monitorizar proceso ETL**: `tail -f etl/etl.log`
 
 ---
 
@@ -112,7 +118,7 @@ Una vez iniciado el sistema, puedes acceder a la herramienta de visualización:
 - URL: [http://localhost:3000](http://localhost:3000)
 - Usuario y contraseña: configurados en el archivo `.env`
 
-La conexión al DWH está preconfigurada para facilitar la creación de dashboards y consultas.
+La conexión al DWH está preconfigurada para facilitar la creación de cuadros de mando y consultas.
 
 ---
 

@@ -34,3 +34,15 @@ run_etl:
 # Pipeline completo
 reload: clean stop remove_erp start_erp start_services run_etl
 	@echo "Proceso diario completado."
+
+# Construye las imágenes de Docker
+build:
+	cd $(PROJECT_DIR) && docker compose build
+
+# Levanta todos los servicios
+up:
+	cd $(PROJECT_DIR) && docker compose up -d
+
+# Muestra los logs de los contenedores
+logs:
+	cd $(PROJECT_DIR) && docker compose logs -f
