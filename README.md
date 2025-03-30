@@ -1,4 +1,4 @@
-# Sistema de Analítica de Datos para Business Intelligence
+# ClearBI:  Analítica de Datos para Business Intelligence
 
 Este proyecto forma parte del Trabajo Fin de Ciclo de Desarrollo de Aplicaciones Multiplataforma. Implementa un sistema completo de integración, almacenamiento y análisis de datos para una empresa ficticia dedicada a la venta de bicicletas y accesorios.
 
@@ -12,9 +12,9 @@ El sistema automatiza la extracción, transformación y carga (ETL) de datos pro
 
 ## 🛠️ Arquitectura
 
-- **ERP (PostgreSQL):** Base de datos operativa con datos normalizados.
-- **Data Warehouse (PostgreSQL):** Base de datos desnormalizada para análisis.
-- **ETL (Python):** Proceso automatizado de carga de datos.
+- **ERP:** Base de datos operativa con datos normalizados.
+- **Data Warehouse BI:** Base de datos desnormalizada para análisis.
+- **ETL:** Proceso automatizado de carga de datos.
 - **Metabase:** Plataforma para consultas y visualización de datos.
 
 Los servicios están orquestados mediante **Docker Compose** y organizados en redes internas para mayor seguridad.
@@ -52,7 +52,7 @@ Los servicios se comunican mediante dos redes internas:
 │   ├── despliegue.png
 ├── metabase/
 │   ├── Dockerfile
-|   └── wait-for-etl.sh
+│   └── wait-for-etl.sh
 ├── docker-compose.yml
 ├── .env.example
 └── Makefile
@@ -120,6 +120,7 @@ Una vez iniciado el sistema, puedes acceder a la herramienta de visualización:
 
 La conexión al DWH está preconfigurada para facilitar la creación de cuadros de mando y consultas.
 
+[![Texto alternativo](img/ventas-sin-filtros.png)](img/ventas-sin-filtros.png)
 ---
 
 ## 📚 Licencia
